@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Room - Chat App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #0898f2;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .join-room-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .join-room-header {
+            background: #0898f2;
+            color: white;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            margin: -40px -40px 30px -40px;
+        }
+
+        .join-room-header h2 {
+            margin: 0;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #0898f2;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 16px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0898f2;
+            box-shadow: 0 0 0 0.2rem rgba(61, 124, 168, 0.25);
+        }
+
+        .btn-join {
+            background: #0898f2;
+            border: none;
+            padding: 14px;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            width: 100%;
+            color: white;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-join:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(61, 124, 168, 0.4);
+        }
+
+        .logout-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logout-link a {
+            color: #0898f2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .logout-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="join-room-container">
+        <div class="join-room-header">
+            <h2>💬 Chat app</h2>
+        </div>
+
+        <form id="joinRoomForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label for="room" class="form-label">Room</label>
+                <select class="form-select" id="room" required>
+                    <option value="">Select a room...</option>
+                    <option value="devops">🔧 DevOps</option>
+                    <option value="makeup">💄 Makeup</option>
+                    <option value="music">🎶 Music</option>
+                    <option value="sports">⚽ Sports</option>
+                    <option value="travels">✈️ Travels</option>
+                    <option value="girlhood">💅🏾 Girlhood</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-join">Join Chat Room</button>
+        </form>
+
+        <div class="logout-link">
+            <a href="#" id="logoutLink">Logout</a>
+        </div>
+    </div>
+
+    <script>
+        console.log('Rooms page loaded');
+        
+        // Check if user is logged in
+        const userStr = localStorage.getItem('chatUser');
+        console.log('User string from localStorage:', userStr);
+        
+        let user = null;
+        try {
+            user = userStr ? JSON.parse(userStr) : null;
+        } catch (e) {
+            console.error('Error parsing user:', e);
+        }
+        
+        console.log('Parsed user:', user);
+        
+        if (!user || !user.username) {
+            console.log('No valid user found, redirecting to login');
+            alert('Please login first');
+            window.location.href = '/login';
+        } else {
+            // Display username
+            document.getElementById('username').value = user.username;
+            console.log('Username set to:', user.username);
+        }
+
+        // Handle room join
+        document.getElementById('joinRoomForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const room = document.getElementById('room').value;
+            console.log('Selected room:', room);
+            
+            if (!room) {
+                alert('Please select a room');
+                return;
+            }
+
+            // Store selected room in sessionStorage for the chat page
+            sessionStorage.setItem('selectedRoom', room);
+            console.log('Room saved to sessionStorage');
+            
+            // Redirect to chat page
+            window.location.href = '/chat';
+        });
+
+        // Handle logout
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Logout clicked');
+            localStorage.removeItem('chatUser');
+            sessionStorage.removeItem('selectedRoom');
+            window.location.href = '/login';
+        });
+    </script>
+</body>
+</html>
