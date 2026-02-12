@@ -26,39 +26,26 @@ const socket = io();
 console.log('🔌 Socket.io initialized');
 
 // DOM elements
-const roomList = document.getElementById('roomList');
-const welcomeScreen = document.getElementById('welcomeScreen');
-const chatArea = document.getElementById('chatArea');
-const currentRoomName = document.getElementById('currentRoomName');
 const messagesContainer = document.getElementById('messagesContainer');
 const messageInput = document.getElementById('messageInput');
 const sendButton = document.getElementById('sendButton');
 const leaveRoomButton = document.getElementById('leaveRoomButton');
-const usernameDisplay = document.getElementById('usernameDisplay');
-const logoutButton = document.getElementById('logoutButton');
 const typingIndicator = document.getElementById('typingIndicator');
-const currentRoomDisplay = document.getElementById('currentRoomDisplay');
+const membersList = document.getElementById('membersList');
+const roomNameDisplay = document.getElementById('roomNameDisplay');
+
+// Track members in room
+const membersInRoom = new Set();
 
 console.log('📋 DOM Elements:', {
-    roomList: !!roomList,
-    welcomeScreen: !!welcomeScreen,
-    chatArea: !!chatArea,
-    currentRoomName: !!currentRoomName,
     messagesContainer: !!messagesContainer,
     messageInput: !!messageInput,
     sendButton: !!sendButton,
     leaveRoomButton: !!leaveRoomButton,
-    usernameDisplay: !!usernameDisplay,
-    logoutButton: !!logoutButton,
     typingIndicator: !!typingIndicator,
-    currentRoomDisplay: !!currentRoomDisplay
+    membersList: !!membersList,
+    roomNameDisplay: !!roomNameDisplay
 });
-
-// Set username in sidebar
-if (usernameDisplay) {
-    usernameDisplay.textContent = user.username;
-    console.log('✅ Username displayed:', user.username);
-}
 
 // Current room state
 let currentRoom = null;
@@ -76,62 +63,24 @@ if (selectedRoom) {
     }, 500);
 }
 
-// Room click handler (for sidebar navigation)
-if (roomList) {
-    roomList.addEventListener('click', (e) => {
-        console.log('🖱️ Room list clicked!', e.target);
-        const roomItem = e.target.closest('.room-item');
-        console.log('📍 Room item:', roomItem);
-        if (roomItem) {
-            const room = roomItem.dataset.room;
-            console.log('🚪 Switching to room:', room);
-            joinRoom(room);
-        }
-    });
-    console.log('✅ Room click handler attached');
-}
-
 // Join room function
 function joinRoom(room) {
     console.log('🚪 JOIN ROOM FUNCTION CALLED:', room);
     
-    // Leave current room if in one
-    if (currentRoom) {
-        console.log('👋 Leaving current room:', currentRoom);
-        socket.emit('leave_room', { username: user.username, room: currentRoom });
-    }
-
     // Join new room
     currentRoom = room;
     socket.emit('join_room', { username: user.username, room: room });
     console.log('📤 Emitted join_room event');
 
-    // Update UI
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'none';
-        console.log('✅ Welcome screen hidden');
-    }
+    // Clear and initialize members list
+    membersInRoom.clear();
+    membersInRoom.add(user.username); // Add yourself first
     
-    if (chatArea) {
-        chatArea.style.display = 'flex';
-        chatArea.style.flexDirection = 'column';
-        console.log('✅ Chat area shown');
-    }
-    
-    if (leaveRoomButton) {
-        leaveRoomButton.style.display = 'block';
-        console.log('✅ Leave room button shown');
-    }
-    
-    // Capitalize room name for display
-    const displayName = room.charAt(0).toUpperCase() + room.slice(1);
-    if (currentRoomName) {
-        currentRoomName.textContent = displayName;
+    // Update room name display
+    if (roomNameDisplay) {
+        const displayName = room.charAt(0).toUpperCase() + room.slice(1);
+        roomNameDisplay.textContent = displayName;
         console.log('✅ Room name set:', displayName);
-    }
-    
-    if (currentRoomDisplay) {
-        currentRoomDisplay.textContent = displayName;
     }
     
     if (messagesContainer) {
@@ -139,15 +88,7 @@ function joinRoom(room) {
         console.log('✅ Messages cleared');
     }
 
-    // Update active room styling
-    document.querySelectorAll('.room-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    const selectedRoomElement = document.querySelector(`[data-room="${room}"]`);
-    if (selectedRoomElement) {
-        selectedRoomElement.classList.add('active');
-        console.log('✅ Active room styling applied');
-    }
+    updateMembersList();
 }
 
 // Leave room button
@@ -226,43 +167,48 @@ if (messageInput) {
     console.log('✅ Typing indicator handler attached');
 }
 
-// Logout button
-if (logoutButton) {
-    logoutButton.addEventListener('click', () => {
-        console.log('🚪 Logout clicked');
-        localStorage.removeItem('chatUser');
-        sessionStorage.removeItem('selectedRoom');
-        window.location.href = '/login';
-    });
-    console.log('✅ Logout handler attached');
-}
-
 // Socket event listeners
 
 socket.on('user_joined', (data) => {
     console.log('📥 User joined:', data);
+    membersInRoom.add(data.username);
+    updateMembersList();
     addSystemMessage(`${data.username} has joined the chat`);
 });
 
 socket.on('user_left', (data) => {
     console.log('📥 User left:', data);
+    membersInRoom.delete(data.username);
+    updateMembersList();
     addSystemMessage(`${data.username} has left the chat`);
 });
 
 socket.on('room_history', (messages) => {
     console.log('📥 Room history received:', messages.length, 'messages');
     
-    // Show welcome message first
+    // Show welcome message
     addSystemMessage('Welcome to chat app :)');
     
-    // Then show message history
+    // Extract unique usernames from message history and add messages
     messages.forEach(msg => {
+        if (msg.from_user) {
+            membersInRoom.add(msg.from_user);
+        }
         addMessage(msg.from_user, msg.message, msg.date_sent);
     });
+    
+    updateMembersList();
 });
 
 socket.on('group_message', (data) => {
     console.log('📥 Group message received:', data);
+    
+    // Add sender to members list if not already there
+    if (data.username) {
+        membersInRoom.add(data.username);
+        updateMembersList();
+    }
+    
     addMessage(data.username, data.message, data.timestamp);
 });
 
@@ -288,21 +234,18 @@ socket.on('error', (error) => {
 function addMessage(username, message, timestamp) {
     console.log('💬 Adding message:', username, message);
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${username === user.username ? 'own-message' : 'other-message'}`;
+    messageDiv.className = `message ${username === user.username ? 'own' : ''}`;
 
     const messageHeader = document.createElement('div');
     messageHeader.className = 'message-header';
-    messageHeader.innerHTML = `
-        <span class="message-username">${escapeHtml(username)}</span>
-        <span class="message-time">${formatTime(timestamp)}</span>
-    `;
+    messageHeader.textContent = `${escapeHtml(username)} ${formatTime(timestamp)}`;
 
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-    messageContent.textContent = message;
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.textContent = message;
 
     messageDiv.appendChild(messageHeader);
-    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(messageText);
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -329,6 +272,25 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function updateMembersList() {
+    if (!membersList) return;
+    
+    console.log('👥 Updating members list:', Array.from(membersInRoom));
+    membersList.innerHTML = '';
+    
+    if (membersInRoom.size === 0) {
+        const li = document.createElement('li');
+        li.textContent = user.username;
+        membersList.appendChild(li);
+    } else {
+        membersInRoom.forEach(member => {
+            const li = document.createElement('li');
+            li.textContent = member;
+            membersList.appendChild(li);
+        });
+    }
 }
 
 console.log('✅ CLIENT.JS FULLY LOADED AND INITIALIZED');

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,337 +12,210 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
+            background: #f0f0f0;
         }
 
         .chat-container {
             display: flex;
             height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
-        /* Sidebar */
-        .sidebar {
-            width: 300px;
-            background: #1e3c72;
-            color: white;
+        /* Left Sidebar - Room Info */
+        .room-sidebar {
+            width: 220px;
+            background: #87CEEB;
+            color: #333;
             display: flex;
             flex-direction: column;
         }
 
-        .sidebar-header {
-            padding: 20px;
-            background: #2e64c2;
-            border-bottom: 1px solid #1a2f5c;
+        .room-header {
+            padding: 15px;
+            background: rgba(255,255,255,0.8);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
 
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 20px;
+        .room-header h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
         }
 
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
+        .room-info {
+            padding: 15px;
         }
 
-        .user-info span {
+        .room-info h4 {
             font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
         }
 
-        .btn-logout {
-            background: #e74c3c;
-            border: none;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-logout:hover {
-            background: #c0392b;
-        }
-
-        .room-selection {
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .room-selection h4 {
-            margin-bottom: 15px;
+        .room-name {
             font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
 
-        .room-list {
+        .members-list {
             list-style: none;
         }
 
-        .room-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .room-item:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .room-item.active {
-            background: #2e64c2;
-        }
-
-        .current-room-info {
-            padding: 15px 20px;
-            background: rgba(255,255,255,0.05);
-            border-top: 1px solid #1a2f5c;
+        .members-list li {
+            padding: 8px 0;
+            font-size: 14px;
+            opacity: 0.95;
         }
 
         /* Main Chat Area */
-        .main-chat {
+        .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #f8f9fa;
         }
 
         .chat-header {
-            padding: 20px;
-            background: white;
-            border-bottom: 2px solid #e0e0e0;
+            padding: 15px 20px;
+            background: #87CEEB;
+            color: #333;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .chat-header h2 {
+            font-size: 20px;
             margin: 0;
-            color: #1e3c72;
-            font-size: 24px;
         }
 
-        .btn-leave-room {
-            background: #e74c3c;
-            color: white;
-            border: none;
+        .btn-leave {
+            background: white;
+            border: 2px solid #333;
+            color: #333;
             padding: 8px 20px;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
         }
 
-        .btn-leave-room:hover {
-            background: #c0392b;
+        .btn-leave:hover {
+            background: #87CEEB;
+            color: white;
         }
 
         .messages-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
+            background: #f8f9fa;
         }
 
         .message {
             margin-bottom: 15px;
-            max-width: 70%;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+            max-width: 80%;
         }
 
-        .message.own-message {
-            align-self: flex-end;
+        .message.own {
+            background: #007bff;
+            color: white;
             margin-left: auto;
         }
 
-        .message.other-message {
-            align-self: flex-start;
-        }
-
         .message-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
             font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.8;
         }
 
-        .message-username {
-            font-weight: bold;
-        }
-
-        .message-time {
-            opacity: 0.7;
-            font-size: 11px;
-        }
-
-        .message-content {
-            padding: 10px 15px;
-            border-radius: 10px;
-            word-wrap: break-word;
-        }
-
-        .own-message .message-content {
-            background: #2e64c2;
-            color: white;
-        }
-
-        .other-message .message-content {
-            background: white;
-            color: #1e3c72;
-            border: 1px solid #e0e0e0;
-        }
-
-        .own-message .message-username {
-            color: #2e64c2;
-        }
-
-        .other-message .message-username {
-            color: #2e64c2;
+        .message-text {
+            font-size: 14px;
         }
 
         .system-message {
             text-align: center;
-            color: #7f8c8d;
+            color: #6c757d;
+            font-size: 13px;
             font-style: italic;
             margin: 10px 0;
-            font-size: 14px;
         }
 
         .typing-indicator {
             padding: 10px 20px;
-            color: #7f8c8d;
+            font-size: 13px;
+            color: #6c757d;
             font-style: italic;
-            font-size: 14px;
-            min-height: 35px;
-            display: none;
+            min-height: 30px;
         }
 
-        .message-input-container {
-            padding: 20px;
-            background: white;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .input-group {
+        .input-container {
+            padding: 15px 20px;
+            background: #87CEEB;
             display: flex;
             gap: 10px;
         }
 
         .message-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
             font-size: 14px;
-            outline: none;
-        }
-
-        .message-input:focus {
-            border-color: #2e64c2;
         }
 
         .btn-send {
-            background: #2e64c2;
-            color: white;
+            background: white;
+            color: #333;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
+            padding: 10px 25px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
         }
 
         .btn-send:hover {
-            background: #1e3c72;
-        }
-
-        .welcome-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            color: #7f8c8d;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        #chatArea {
-            display: none;
-            flex: 1;
-            flex-direction: column;
-        }
-
-        #chatArea.active {
-            display: flex;
+            background: #f0f0f0;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h3>💬 Chat App</h3>
-                <div class="user-info">
-                    <span id="usernameDisplay">Loading...</span>
-                    <button class="btn-logout" id="logoutButton">Logout</button>
-                </div>
+        <!-- Room Info Sidebar -->
+        <div class="room-sidebar">
+            <div class="room-header">
+                <h3>Chat app</h3>
             </div>
-
-            <div class="room-selection">
-                <h4>Available Rooms</h4>
-                <ul class="room-list" id="roomList">
-                    <li class="room-item" data-room="devops">🔧 DevOps</li>
-                    <li class="room-item" data-room="makeup">💄 Makeup</li>
-                    <li class="room-item" data-room="music">🎶 Music</li>
-                    <li class="room-item" data-room="sports">⚽ Sports</li>
-                    <li class="room-item" data-room="travels">✈️ Travels</li>
-                    <li class="room-item" data-room="girlhood">💅🏾 Girlhood</li>
+            <div class="room-info">
+                <h4>Room name: <span id="roomNameDisplay">Loading...</span></h4>
+                <h4>Members:</h4>
+                <ul class="members-list" id="membersList">
+                    <li>Loading...</li>
                 </ul>
-            </div>
-
-            <div class="current-room-info">
-                <small>Current Room:</small>
-                <div id="currentRoomDisplay" style="font-weight: bold; margin-top: 5px;">
-                    Not in a room
-                </div>
             </div>
         </div>
 
         <!-- Main Chat Area -->
-        <div class="main-chat">
+        <div class="chat-area">
             <div class="chat-header">
-                <h2 id="currentRoomName">Select a room to start chatting</h2>
-                <button class="btn-leave-room" id="leaveRoomButton" style="display: none;">
-                    Leave Room
-                </button>
+                <h2 id="chatTitle">Chat app</h2>
+                <button class="btn-leave" id="leaveRoomButton">Leave Room</button>
             </div>
 
-            <div id="welcomeScreen" class="welcome-screen">
-                <div>
-                    <h3>👋 Welcome!</h3>
-                    <p>Select a room from the sidebar to start chatting</p>
-                </div>
-            </div>
+            <div class="messages-container" id="messagesContainer"></div>
 
-            <div id="chatArea">
-                <div class="messages-container" id="messagesContainer"></div>
-                
-                <div class="typing-indicator" id="typingIndicator"></div>
+            <div class="typing-indicator" id="typingIndicator"></div>
 
-                <div class="message-input-container">
-                    <div class="input-group">
-                        <input type="text" class="message-input" id="messageInput" 
-                               placeholder="Type your message here...">
-                        <button class="btn-send" id="sendButton">Send</button>
-                    </div>
-                </div>
+            <div class="input-container">
+                <input type="text" class="message-input" id="messageInput" placeholder="Type your message here...">
+                <button class="btn-send" id="sendButton">Send</button>
             </div>
         </div>
     </div>
