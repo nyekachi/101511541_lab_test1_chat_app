@@ -221,8 +221,8 @@ taskkill /PID <PID> /F
 
 ## 👨‍💻 Author
 
-**Student Name**: [Your Name]  
-**Student ID**: [Your Student ID]  
+**Student Name**: Karen Amadi  
+**Student ID**: 101511541 
 **Course**: COMP 3133 - Full Stack Development  
 **Lab Test**: 1  
 **Date**: February 11, 2026
@@ -239,5 +239,3 @@ This project is created for educational purposes as part of COMP 3133 course req
 - George Brown College - COMP 3133 Course
 
 ---
-
-**Note**: This application is a lab test submission and is intended for educational purposes only.
