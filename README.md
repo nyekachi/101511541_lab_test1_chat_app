@@ -214,10 +214,11 @@ taskkill /PID <PID> /F
 ## 📸 Screenshots
 
 ### Room Selection Page
-![Room Selection](screenshots/room-selection.png)
+<img width="1512" height="982" alt="Screenshot 2026-02-11 at 7 47 29 PM" src="https://github.com/user-attachments/assets/5cd916f6-8b8b-47c3-b748-bd988ed6ad5e" />
 
 ### Chat Interface
-![Chat Interface](screenshots/chat-interface.png)
+<img width="1512" height="982" alt="Screenshot 2026-02-11 at 7 52 18 PM" src="https://github.com/user-attachments/assets/ec901052-42d8-4f99-a5e7-d8644a2e2a77" />
+
 
 ## 👨‍💻 Author
 
